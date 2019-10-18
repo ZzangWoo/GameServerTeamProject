@@ -43,6 +43,8 @@ BEGIN_MESSAGE_MAP(Cgame_project_serverDlg, CDialogEx)
 	ON_MESSAGE(WM_CLIENT_ROOM, &Cgame_project_serverDlg::OnClientRoom)
 	ON_MESSAGE(WM_CLIENT_IS_ON_CREATE, &Cgame_project_serverDlg::OnClientIsOnCreate)
 	ON_MESSAGE(WM_CLIENT_RECV_ROOM_POSITION, &Cgame_project_serverDlg::OnClientRecvRoomPosition)
+	ON_MESSAGE(WM_CLIENT_OTHELLO_MSG, &Cgame_project_serverDlg::OnClientOthelloMsg)
+	ON_MESSAGE(WM_CLIENT_OTHELLO_MSG_SEND, &Cgame_project_serverDlg::OnClientOthelloMsgSend)
 END_MESSAGE_MAP()
 
 
@@ -342,6 +344,44 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRecvRoomPosition(WPARAM wParam,
 			}
 		}
 		countIndex++;
+	}
+
+	return 0;
+}
+
+//오델로 메세지 서버에 출력하는 함수
+afx_msg LRESULT Cgame_project_serverDlg::OnClientOthelloMsg(WPARAM wParam, LPARAM lParam)
+{
+	LPCTSTR lpData = (LPCTSTR)lParam;
+
+	m_list_msg.InsertString(-1, lpData);
+	m_list_msg.SetCurSel(m_list_msg.GetCount() - 1);
+	return 0;
+}
+
+//오델로 메세지 해당 방 클라이언트에 추가하는 함수
+afx_msg LRESULT Cgame_project_serverDlg::OnClientOthelloMsgSend(WPARAM wParam, LPARAM lParam)
+{
+	othelloMsgStruct *msgStruct = (othelloMsgStruct*)lParam;
+
+	CString str,tmp;
+	str.Format(_T("[%s]:%s"), msgStruct->name, msgStruct->msg); // 클라이언트에 메세지 보내기
+
+	POSITION pos = m_RoomList.FindIndex(msgStruct->roomID);
+
+	Room* r = (Room*)m_RoomList.GetAt(pos);
+	if (r != NULL) {
+		pos = r->clientList.GetHeadPosition();
+		while (pos != NULL) {
+			CClientSocket* cs = (CClientSocket*)r->clientList.GetNext(pos);
+			if (cs != NULL) {
+				othelloMsg* msg = new othelloMsg;
+				msg->id = 51;
+				msg->size = sizeof(othelloMsgStruct);
+				_tcscpy_s(msg->data.msg, str);
+				cs->Send((char*)msg, sizeof(othelloMsg));
+			}
+		}
 	}
 
 	return 0;

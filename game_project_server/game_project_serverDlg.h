@@ -57,5 +57,9 @@ protected:
 	afx_msg LRESULT OnClientRoom(WPARAM wParam, LPARAM lParam);
 public:
 	CListBox m_list_room;
+protected:
+	afx_msg LRESULT OnClientOthelloMsg(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnClientOthelloMsgSend(WPARAM wParam, LPARAM lParam);
 };
+
 

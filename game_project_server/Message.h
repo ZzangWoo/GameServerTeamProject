@@ -98,3 +98,18 @@ struct createRoom {
 	createRoomStruct data;
 };
 /*****************************************************************************************/
+// 룸 정보
+
+
+// 오델로 채팅 메세지
+struct othelloMsgStruct {
+	TCHAR msg[2000];
+	int roomID;
+	TCHAR name[50];
+};
+
+struct othelloMsg {
+	int id;
+	int size;
+	othelloMsgStruct data;
+};

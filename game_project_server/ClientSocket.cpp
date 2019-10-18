@@ -59,6 +59,15 @@ void CClientSocket::OnReceive(int nErrorCode)
 		this->m_uPortNum = uPortNum;
 		SendMessage(m_hWnd, WM_CLIENT_READY, 0, (LPARAM)this);
 	}
+	if (header[0] == 50) {
+		othelloMsgStruct *msg = new othelloMsgStruct;
+		ZeroMemory(msg,sizeof(othelloMsg));
+		Receive((char*)msg, header[1]);
+		CString str;
+		str.Format(_T("[Room:%d client:%d]:%s"), msg->roomID, int(this), msg->msg);
+		SendMessage(m_hWnd, WM_CLIENT_OTHELLO_MSG, 0, (LPARAM)((LPCTSTR)str));
+		SendMessage(m_hWnd, WM_CLIENT_OTHELLO_MSG_SEND, 0, (LPARAM)msg);
+	}
 	if (header[0] == 3000) {
 		roomInfoRecvMessage *msg = new roomInfoRecvMessage;
 		Receive((char *)msg, header[1]);

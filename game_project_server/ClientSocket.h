@@ -9,6 +9,10 @@
 #define WM_CLIENT_ROOM_CREATE WM_USER+6
 #define WM_CLIENT_ROOM WM_USER+7
 
+
+#define WM_CLIENT_OTHELLO_MSG WM_USER+50
+#define WM_CLIENT_OTHELLO_MSG_SEND WM_USER+51
+
 #define WM_CLIENT_IS_ON_CREATE WM_USER+3002
 
 #define WM_CLIENT_RECV_ROOM_POSITION WM_USER+4000
@@ -24,6 +28,7 @@ public:
 	CString m_IPAddress;
 	UINT m_uPortNum;
 	bool m_ready;
+	int roomID;
 };
 
 class Room {
