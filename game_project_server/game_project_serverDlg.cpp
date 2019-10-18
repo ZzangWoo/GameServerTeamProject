@@ -275,7 +275,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 	cr->id = 5000;
 	cr->size = sizeof(createRoomStruct);
 	cr->data.kind = room->kind;
-
+	cr->data.roomID = m_RoomList.GetSize()-1;
 
 
 	POSITION createClientPosition = room->clientList.GetHeadPosition();

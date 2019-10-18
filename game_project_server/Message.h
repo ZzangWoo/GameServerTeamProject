@@ -89,6 +89,7 @@ struct attendRoom {
 /********************** 방 생성 완료후 클라이언트가 방 만들수 있게 해줌 ******************/
 struct createRoomStruct {
 	int kind;
+	int roomID;
 };
 
 struct createRoom {
