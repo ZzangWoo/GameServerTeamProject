@@ -50,6 +50,8 @@ void CClientSocket::OnReceive(int nErrorCode)
 		strTmp.Format(_T("[%s:%d:%d:%s]:%s"), strIPAddress, uPortNum,int(this), msg->name, msg->str);
 		SendMessage(m_hWnd, WM_CLIENT_MSG_RECV, 0, (LPARAM)((LPCTSTR)strTmp));
 		SendMessage(m_hWnd, WM_CLIENT_MSG_SEND, 0, (LPARAM)msg);
+
+		delete msg;
 	}
 	if (header[0] == 3) {
 		CString strIPAddress;
@@ -92,9 +94,12 @@ void CClientSocket::OnReceive(int nErrorCode)
 	if (header[0] == 4000) {
 		attendRoomStruct* ars = new attendRoomStruct;
 		Receive((char*)ars, header[1]);
-		SendMessage(m_hWnd, WM_CLIENT_RECV_ROOM_POSITION, 0, (LPARAM)ars);
+		this->roomID = ars->roomPosition;
+		SendMessage(m_hWnd, WM_CLIENT_RECV_ROOM_POSITION, 0, (LPARAM)this);
 		delete ars;
 	}
+
+
 	/********************************************************************************/
 	CSocket::OnReceive(nErrorCode);
 }

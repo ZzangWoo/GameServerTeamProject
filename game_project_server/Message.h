@@ -86,10 +86,12 @@ struct attendRoom {
 };
 /*************************************************************************************/
 
+//방참가할 때 게임 종류 받기 
 /********************** 방 생성 완료후 클라이언트가 방 만들수 있게 해줌 ******************/
 struct createRoomStruct {
 	int kind;
 	int roomID;
+	TCHAR name[50];
 };
 
 struct createRoom {
@@ -113,3 +115,4 @@ struct othelloMsg {
 	int size;
 	othelloMsgStruct data;
 };
+

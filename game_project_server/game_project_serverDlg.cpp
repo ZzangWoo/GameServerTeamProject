@@ -278,7 +278,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 	cr->size = sizeof(createRoomStruct);
 	cr->data.kind = room->kind;
 	cr->data.roomID = m_RoomList.GetSize()-1;
-
+	_tcscpy_s( cr->data.name , str);
 
 	POSITION createClientPosition = room->clientList.GetHeadPosition();
 	while (createClientPosition != NULL) {
@@ -328,11 +328,21 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientIsOnCreate(WPARAM wParam, LPARA
 /****************************************************************************************************/
 
 afx_msg LRESULT Cgame_project_serverDlg::OnClientRecvRoomPosition(WPARAM wParam, LPARAM lParam) {
-	attendRoomStruct* ars = (attendRoomStruct*)lParam;
+	CClientSocket* cs = (CClientSocket*)lParam;
 
-	POSITION roomListPosition = m_RoomList.GetHeadPosition();
-
-	int countIndex = 0;
+	POSITION roomListPosition = m_RoomList.FindIndex(cs->roomID);
+	Room* r = (Room*)m_RoomList.GetAt(roomListPosition);
+	if (r != NULL) {
+		r->clientList.AddTail(cs);
+		createRoom* msg = new createRoom;
+		msg->id = 5004;
+		msg->size = sizeof(createRoomStruct);
+		msg->data.kind = r->kind;
+		_tcscpy_s( msg->data.name , r->name);
+		msg->data.roomID = cs->roomID;
+		cs->Send((char*)msg, sizeof(createRoom));
+	}
+	/*int countIndex = 0;
 
 	while (roomListPosition != NULL) {
 		Room* sendRoom = (Room*)m_RoomList.GetNext(roomListPosition);
@@ -344,7 +354,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRecvRoomPosition(WPARAM wParam,
 			}
 		}
 		countIndex++;
-	}
+	}*/
 
 	return 0;
 }
