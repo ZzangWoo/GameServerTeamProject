@@ -113,3 +113,16 @@ struct othelloMsg {
 	int size;
 	othelloMsgStruct data;
 };
+
+// 카드게임 채팅 메세지
+struct cardMsgStruct {
+	TCHAR msg[2000];
+	int roomID;
+	TCHAR name[50];
+};
+
+struct cardMsg {
+	int id;
+	int size;
+	cardMsgStruct data;
+};

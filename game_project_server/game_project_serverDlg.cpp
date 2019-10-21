@@ -45,6 +45,8 @@ BEGIN_MESSAGE_MAP(Cgame_project_serverDlg, CDialogEx)
 	ON_MESSAGE(WM_CLIENT_RECV_ROOM_POSITION, &Cgame_project_serverDlg::OnClientRecvRoomPosition)
 	ON_MESSAGE(WM_CLIENT_OTHELLO_MSG, &Cgame_project_serverDlg::OnClientOthelloMsg)
 	ON_MESSAGE(WM_CLIENT_OTHELLO_MSG_SEND, &Cgame_project_serverDlg::OnClientOthelloMsgSend)
+	ON_MESSAGE(WM_CLIENT_CARD_MSG, &Cgame_project_serverDlg::OnClientCardMsg)
+	ON_MESSAGE(WM_CLIENT_CARD_MSG_SEND, &Cgame_project_serverDlg::OnClientCardMsgSend)
 END_MESSAGE_MAP()
 
 
@@ -386,3 +388,41 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientOthelloMsgSend(WPARAM wParam, L
 
 	return 0;
 }
+
+/********************************************** 카드게임 관련 함수 *************************************************/
+// 카드게임 메세지 서버에 출력하는 함수
+afx_msg LRESULT Cgame_project_serverDlg::OnClientCardMsg(WPARAM wParam, LPARAM lParam) {
+	LPCTSTR lpData = (LPCTSTR)lParam;
+
+	m_list_msg.InsertString(-1, lpData);
+	m_list_msg.SetCurSel(m_list_msg.GetCount() - 1);
+	return 0;
+}
+
+// 카드게임 메세지 해당 방 클라이언트에 추가하는 함수
+afx_msg LRESULT Cgame_project_serverDlg::OnClientCardMsgSend(WPARAM wParam, LPARAM lParam) {
+	cardMsgStruct *msgStruct = (cardMsgStruct*)lParam;
+
+	CString str, tmp;
+	str.Format(_T("[%s]:%s"), msgStruct->name, msgStruct->msg); // 클라이언트에 메세지 보내기
+
+	POSITION pos = m_RoomList.FindIndex(msgStruct->roomID);
+
+	Room* r = (Room*)m_RoomList.GetAt(pos);
+	if (r != NULL) {
+		pos = r->clientList.GetHeadPosition();
+		while (pos != NULL) {
+			CClientSocket* cs = (CClientSocket*)r->clientList.GetNext(pos);
+			if (cs != NULL) {
+				cardMsg* msg = new cardMsg;
+				msg->id = 5001;
+				msg->size = sizeof(cardMsgStruct);
+				_tcscpy_s(msg->data.msg, str);
+				cs->Send((char*)msg, sizeof(cardMsg));
+			}
+		}
+	}
+
+	return 0;
+}
+/*******************************************************************************************************************/
