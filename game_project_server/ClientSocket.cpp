@@ -112,6 +112,12 @@ void CClientSocket::OnReceive(int nErrorCode)
 		SendMessage(m_hWnd, WM_CLIENT_CARD_MSG, 0, (LPARAM)((LPCTSTR)str));
 		SendMessage(m_hWnd, WM_CLIENT_CARD_MSG_SEND, 0, (LPARAM)msg);
 	}
+	if (header[0] == 5400) {
+		cardReadyStruct* crs = new cardReadyStruct;
+		ZeroMemory(crs, sizeof(cardReady));
+		Receive((char*)crs, header[1]);
+		SendMessage(m_hWnd, WM_CLIENT_CARD_IS_READY, 0, (LPARAM)crs);
+	}
 	/*******************************************************************/
 	CSocket::OnReceive(nErrorCode);
 }

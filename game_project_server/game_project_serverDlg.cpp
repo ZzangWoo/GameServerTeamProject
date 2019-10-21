@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(Cgame_project_serverDlg, CDialogEx)
 	ON_MESSAGE(WM_CLIENT_OTHELLO_MSG_SEND, &Cgame_project_serverDlg::OnClientOthelloMsgSend)
 	ON_MESSAGE(WM_CLIENT_CARD_MSG, &Cgame_project_serverDlg::OnClientCardMsg)
 	ON_MESSAGE(WM_CLIENT_CARD_MSG_SEND, &Cgame_project_serverDlg::OnClientCardMsgSend)
+	ON_MESSAGE(WM_CLIENT_CARD_IS_READY, &Cgame_project_serverDlg::OnClientCardIsReady)
 END_MESSAGE_MAP()
 
 
@@ -280,7 +281,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 	cr->size = sizeof(createRoomStruct);
 	cr->data.kind = room->kind;
 	cr->data.roomID = m_RoomList.GetSize()-1;
-	_tcscpy_s( cr->data.name , str);
+	_tcscpy_s(cr->data.name, str);
 
 	POSITION createClientPosition = room->clientList.GetHeadPosition();
 	while (createClientPosition != NULL) {
@@ -431,6 +432,33 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientCardMsgSend(WPARAM wParam, LPAR
 				cs->Send((char*)msg, sizeof(cardMsg));
 			}
 		}
+	}
+
+	return 0;
+}
+
+afx_msg LRESULT Cgame_project_serverDlg::OnClientCardIsReady(WPARAM wParam, LPARAM lParam) {
+	cardReadyStruct* crs = (cardReadyStruct*)lParam;
+
+	POSITION pos = m_RoomList.FindIndex(crs->roomID);
+
+	Room* r = (Room*)m_RoomList.GetAt(pos);
+	if (r != NULL) {
+		r->card_isReady++;
+		if (r->card_isReady == 2) {
+			pos = r->clientList.GetHeadPosition();
+			while (pos != NULL) {
+				CClientSocket* cs = (CClientSocket*)r->clientList.GetNext(pos);
+				if (cs != NULL) {
+					cardStart* start = new cardStart;
+					start->id = 5400;
+					start->size = sizeof(cardStartStruct);
+					start->data.start = TRUE;
+					cs->Send((char*)start, sizeof(cardStart));
+					delete start;
+				}
+			}
+		}		
 	}
 
 	return 0;

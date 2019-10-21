@@ -50,6 +50,7 @@ protected:
 	afx_msg LRESULT OnClientReady(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnClientIsOnCreate(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnClientRecvRoomPosition(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnClientCardIsReady(WPARAM wParam, LPARAM lParam);
 public:
 	CListBox m_room_client_list;
 protected:

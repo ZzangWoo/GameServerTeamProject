@@ -19,6 +19,8 @@
 
 #define WM_CLIENT_CARD_MSG WM_USER+5000
 #define WM_CLIENT_CARD_MSG_SEND WM_USER+5001
+#define WM_CLIENT_CARD_IS_READY WM_USER+5400
+
 class CClientSocket : public CSocket
 {
 public:
@@ -39,6 +41,11 @@ public:
 	int kind;
 	CString name;
 	CObList clientList;
+
+	/********** 짝맞추기에 필요한 변수 ***********/
+	int card_isReady = 0; // 2 : 모두 준비 (가위바위보 출력)
+	/*********************************************/
+
 	Room() {
 
 	}
