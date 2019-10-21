@@ -101,5 +101,17 @@ void CClientSocket::OnReceive(int nErrorCode)
 
 
 	/********************************************************************************/
+
+	/****************** 짝맞추기에서 오는 메세지 ***********************/
+	if (header[0] == 5000) {
+		cardMsgStruct *msg = new cardMsgStruct;
+		ZeroMemory(msg, sizeof(cardMsg));
+		Receive((char*)msg, header[1]);
+		CString str;
+		str.Format(_T("[Room:%d client:%d]:%s"), msg->roomID, int(this), msg->msg);
+		SendMessage(m_hWnd, WM_CLIENT_CARD_MSG, 0, (LPARAM)((LPCTSTR)str));
+		SendMessage(m_hWnd, WM_CLIENT_CARD_MSG_SEND, 0, (LPARAM)msg);
+	}
+	/*******************************************************************/
 	CSocket::OnReceive(nErrorCode);
 }

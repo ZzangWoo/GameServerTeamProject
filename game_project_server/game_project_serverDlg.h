@@ -60,6 +60,9 @@ public:
 protected:
 	afx_msg LRESULT OnClientOthelloMsg(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnClientOthelloMsgSend(WPARAM wParam, LPARAM lParam);
+	
+	afx_msg LRESULT OnClientCardMsg(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnClientCardMsgSend(WPARAM wParam, LPARAM lParam);
 };
 
 

@@ -16,6 +16,9 @@
 #define WM_CLIENT_IS_ON_CREATE WM_USER+3002
 
 #define WM_CLIENT_RECV_ROOM_POSITION WM_USER+4000
+
+#define WM_CLIENT_CARD_MSG WM_USER+5000
+#define WM_CLIENT_CARD_MSG_SEND WM_USER+5001
 class CClientSocket : public CSocket
 {
 public:
