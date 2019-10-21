@@ -64,6 +64,7 @@ protected:
 	
 	afx_msg LRESULT OnClientCardMsg(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnClientCardMsgSend(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnClientGameClose(WPARAM wParam, LPARAM lParam);
 };
 
 

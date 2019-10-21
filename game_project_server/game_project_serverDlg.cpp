@@ -47,7 +47,7 @@ BEGIN_MESSAGE_MAP(Cgame_project_serverDlg, CDialogEx)
 	ON_MESSAGE(WM_CLIENT_OTHELLO_MSG_SEND, &Cgame_project_serverDlg::OnClientOthelloMsgSend)
 	ON_MESSAGE(WM_CLIENT_CARD_MSG, &Cgame_project_serverDlg::OnClientCardMsg)
 	ON_MESSAGE(WM_CLIENT_CARD_MSG_SEND, &Cgame_project_serverDlg::OnClientCardMsgSend)
-	ON_MESSAGE(WM_CLIENT_CARD_IS_READY, &Cgame_project_serverDlg::OnClientCardIsReady)
+	ON_MESSAGE(WM_CLIENT_GAME_CLOSE, &Cgame_project_serverDlg::OnClientGameClose)
 END_MESSAGE_MAP()
 
 
@@ -248,7 +248,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 	else if (room->kind == 1006) {
 		kind.Format(_T("짝맞추기"));
 	}
-	str.Format(_T("[%s] %s (%d/2)"), kind, room->name, room->clientList.GetSize());
+	str.Format(_T("[%s] %s"), kind, room->name);
 	room->name = str;
 
 	m_RoomList.AddTail(room);
@@ -281,7 +281,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 	cr->size = sizeof(createRoomStruct);
 	cr->data.kind = room->kind;
 	cr->data.roomID = m_RoomList.GetSize()-1;
-	_tcscpy_s(cr->data.name, str);
+	_tcscpy_s( cr->data.name , str);
 
 	POSITION createClientPosition = room->clientList.GetHeadPosition();
 	while (createClientPosition != NULL) {
@@ -336,14 +336,22 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRecvRoomPosition(WPARAM wParam,
 	POSITION roomListPosition = m_RoomList.FindIndex(cs->roomID);
 	Room* r = (Room*)m_RoomList.GetAt(roomListPosition);
 	if (r != NULL) {
-		r->clientList.AddTail(cs);
-		createRoom* msg = new createRoom;
-		msg->id = 5004;
-		msg->size = sizeof(createRoomStruct);
-		msg->data.kind = r->kind;
-		_tcscpy_s( msg->data.name , r->name);
-		msg->data.roomID = cs->roomID;
-		cs->Send((char*)msg, sizeof(createRoom));
+		if (r->clientList.GetCount() < 2) {
+			r->clientList.AddTail(cs);
+			createRoom* msg = new createRoom;
+			msg->id = 5004;
+			msg->size = sizeof(createRoomStruct);
+			msg->data.kind = r->kind;
+			_tcscpy_s(msg->data.name, r->name);
+			msg->data.roomID = cs->roomID;
+			cs->Send((char*)msg, sizeof(createRoom));
+		}
+		else {
+			createRoom* msg = new createRoom;
+			msg->id = 5007;
+			msg->size = sizeof(createRoomStruct);
+			cs->Send((char*)msg, sizeof(createRoom));
+		}
 	}
 	/*int countIndex = 0;
 
@@ -387,6 +395,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientOthelloMsgSend(WPARAM wParam, L
 		pos = r->clientList.GetHeadPosition();
 		while (pos != NULL) {
 			CClientSocket* cs = (CClientSocket*)r->clientList.GetNext(pos);
+
 			if (cs != NULL) {
 				othelloMsg* msg = new othelloMsg;
 				msg->id = 51;
@@ -436,31 +445,34 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientCardMsgSend(WPARAM wParam, LPAR
 
 	return 0;
 }
+/*******************************************************************************************************************/
 
-afx_msg LRESULT Cgame_project_serverDlg::OnClientCardIsReady(WPARAM wParam, LPARAM lParam) {
-	cardReadyStruct* crs = (cardReadyStruct*)lParam;
+//게임방 나갈때
+afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM lParam)
+{
+	CClientSocket* p = (CClientSocket*)lParam;
+	POSITION pos = m_RoomList.FindIndex(p->roomID);
 
-	POSITION pos = m_RoomList.FindIndex(crs->roomID);
-
-	Room* r = (Room*)m_RoomList.GetAt(pos);
-	if (r != NULL) {
-		r->card_isReady++;
-		if (r->card_isReady == 2) {
-			pos = r->clientList.GetHeadPosition();
-			while (pos != NULL) {
-				CClientSocket* cs = (CClientSocket*)r->clientList.GetNext(pos);
-				if (cs != NULL) {
-					cardStart* start = new cardStart;
-					start->id = 5400;
-					start->size = sizeof(cardStartStruct);
-					start->data.start = TRUE;
-					cs->Send((char*)start, sizeof(cardStart));
-					delete start;
-				}
+	if (pos != NULL) {
+		Room* r = (Room*)m_RoomList.GetAt(pos);
+		if (r != NULL) {
+			POSITION Rpos = r->clientList.Find(p);
+			r->clientList.RemoveAt(Rpos);
+			if (r->clientList.IsEmpty()) {
+				m_RoomList.RemoveAt(pos);
+				m_list_room.DeleteString(p->roomID);
 			}
-		}		
+			createRoom *msg = new createRoom;
+			msg->id = 5006;
+			msg->size = sizeof(createRoomStruct);
+			msg->data.roomID = p->roomID;
+			pos = m_ptrClientSocketList.GetHeadPosition();
+			while (pos != NULL) {
+				CClientSocket* cp = (CClientSocket*)m_ptrClientSocketList.GetNext(pos);
+				cp->Send((char*)msg, sizeof(createRoom));
+			}
+		}
+		UpdateData(false);
 	}
-
 	return 0;
 }
-/*******************************************************************************************************************/
