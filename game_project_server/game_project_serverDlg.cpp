@@ -248,7 +248,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 	else if (room->kind == 1006) {
 		kind.Format(_T("Â¦¸ÂÃß±â"));
 	}
-	str.Format(_T("[%s] %s (%d/2)"), kind, room->name, room->clientList.GetSize());
+	str.Format(_T("[%s] %s"), kind, room->name);
 	room->name = str;
 
 	m_RoomList.AddTail(room);
@@ -336,14 +336,22 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRecvRoomPosition(WPARAM wParam,
 	POSITION roomListPosition = m_RoomList.FindIndex(cs->roomID);
 	Room* r = (Room*)m_RoomList.GetAt(roomListPosition);
 	if (r != NULL) {
-		r->clientList.AddTail(cs);
-		createRoom* msg = new createRoom;
-		msg->id = 5004;
-		msg->size = sizeof(createRoomStruct);
-		msg->data.kind = r->kind;
-		_tcscpy_s( msg->data.name , r->name);
-		msg->data.roomID = cs->roomID;
-		cs->Send((char*)msg, sizeof(createRoom));
+		if (r->clientList.GetCount() < 2) {
+			r->clientList.AddTail(cs);
+			createRoom* msg = new createRoom;
+			msg->id = 5004;
+			msg->size = sizeof(createRoomStruct);
+			msg->data.kind = r->kind;
+			_tcscpy_s(msg->data.name, r->name);
+			msg->data.roomID = cs->roomID;
+			cs->Send((char*)msg, sizeof(createRoom));
+		}
+		else {
+			createRoom* msg = new createRoom;
+			msg->id = 5007;
+			msg->size = sizeof(createRoomStruct);
+			cs->Send((char*)msg, sizeof(createRoom));
+		}
 	}
 	/*int countIndex = 0;
 
