@@ -99,7 +99,13 @@ void CClientSocket::OnReceive(int nErrorCode)
 		delete ars;
 	}
 
-
+	//게임방 나갈때 
+	if (header[0] == 5005) {
+		createRoomStruct *msg = new createRoomStruct;
+		ZeroMemory(msg, sizeof(createRoomStruct));
+		Receive((char*)msg, header[1]);
+		SendMessage(m_hWnd, WM_CLIENT_GAME_CLOSE, 0, (LPARAM)msg->roomID);
+	}
 	/********************************************************************************/
 
 	/****************** 짝맞추기에서 오는 메세지 ***********************/

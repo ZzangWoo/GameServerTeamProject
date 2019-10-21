@@ -47,6 +47,7 @@ BEGIN_MESSAGE_MAP(Cgame_project_serverDlg, CDialogEx)
 	ON_MESSAGE(WM_CLIENT_OTHELLO_MSG_SEND, &Cgame_project_serverDlg::OnClientOthelloMsgSend)
 	ON_MESSAGE(WM_CLIENT_CARD_MSG, &Cgame_project_serverDlg::OnClientCardMsg)
 	ON_MESSAGE(WM_CLIENT_CARD_MSG_SEND, &Cgame_project_serverDlg::OnClientCardMsgSend)
+	ON_MESSAGE(WM_CLIENT_GAME_CLOSE, &Cgame_project_serverDlg::OnClientGameClose)
 END_MESSAGE_MAP()
 
 
@@ -386,6 +387,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientOthelloMsgSend(WPARAM wParam, L
 		pos = r->clientList.GetHeadPosition();
 		while (pos != NULL) {
 			CClientSocket* cs = (CClientSocket*)r->clientList.GetNext(pos);
+
 			if (cs != NULL) {
 				othelloMsg* msg = new othelloMsg;
 				msg->id = 51;
@@ -436,3 +438,19 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientCardMsgSend(WPARAM wParam, LPAR
 	return 0;
 }
 /*******************************************************************************************************************/
+
+//게임방 나갈때
+afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM lParam)
+{
+	int p = (int)lParam;
+	POSITION pos = m_RoomList.FindIndex(p);
+
+	if (pos != NULL) {
+		Room* r = (Room*)m_RoomList.GetAt(pos);
+		AfxMessageBox(r->name);
+		m_RoomList.RemoveAt(pos);
+		m_list_room.DeleteString(p);
+		UpdateData(false);
+	}
+	return 0;
+}
