@@ -104,7 +104,9 @@ void CClientSocket::OnReceive(int nErrorCode)
 		createRoomStruct *msg = new createRoomStruct;
 		ZeroMemory(msg, sizeof(createRoomStruct));
 		Receive((char*)msg, header[1]);
-		SendMessage(m_hWnd, WM_CLIENT_GAME_CLOSE, 0, (LPARAM)msg->roomID);
+		this->roomID = msg->roomID;
+		SendMessage(m_hWnd, WM_CLIENT_GAME_CLOSE, 0, (LPARAM)this);
+		delete msg;
 	}
 	/********************************************************************************/
 

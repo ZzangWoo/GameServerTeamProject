@@ -442,14 +442,28 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientCardMsgSend(WPARAM wParam, LPAR
 //게임방 나갈때
 afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM lParam)
 {
-	int p = (int)lParam;
-	POSITION pos = m_RoomList.FindIndex(p);
+	CClientSocket* p = (CClientSocket*)lParam;
+	POSITION pos = m_RoomList.FindIndex(p->roomID);
 
 	if (pos != NULL) {
 		Room* r = (Room*)m_RoomList.GetAt(pos);
-		AfxMessageBox(r->name);
-		m_RoomList.RemoveAt(pos);
-		m_list_room.DeleteString(p);
+		if (r != NULL) {
+			POSITION Rpos = r->clientList.Find(p);
+			r->clientList.RemoveAt(Rpos);
+			if (r->clientList.IsEmpty()) {
+				m_RoomList.RemoveAt(pos);
+				m_list_room.DeleteString(p->roomID);
+			}
+			createRoom *msg = new createRoom;
+			msg->id = 5006;
+			msg->size = sizeof(createRoomStruct);
+			msg->data.roomID = p->roomID;
+			pos = m_ptrClientSocketList.GetHeadPosition();
+			while (pos != NULL) {
+				CClientSocket* cp = (CClientSocket*)m_ptrClientSocketList.GetNext(pos);
+				cp->Send((char*)msg, sizeof(createRoom));
+			}
+		}
 		UpdateData(false);
 	}
 	return 0;
