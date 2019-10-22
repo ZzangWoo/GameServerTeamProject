@@ -256,6 +256,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 	m_list_room.InsertString(-1, str);
 	m_list_room.SetCurSel(m_list_room.GetCount() - 1);
 
+	
 	/**************** 만들어진 방리스트 클라이언트로 보내기 *************/
 
 	/*********** 보낼 방리스트 만들기 ***********/
@@ -274,6 +275,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 		}
 	}
 	/********************************************************************/
+	
 
 	/*********** 방만든애한테 어떤 방 만들라고 보내주는 곳 **************/
 	createRoom* cr = new createRoom;
@@ -475,4 +477,9 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM
 		UpdateData(false);
 	}
 	return 0;
+}
+
+// 게임 방 리스트 클라이언트에 보내주는 함수
+void SendRoomList() {
+
 }
