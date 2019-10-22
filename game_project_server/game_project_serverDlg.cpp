@@ -454,6 +454,10 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM
 {
 	CClientSocket* p = (CClientSocket*)lParam;
 	POSITION pos = m_RoomList.FindIndex(p->roomID);
+	
+	CString str;
+	str.Format(_T("%d"), pos);
+	AfxMessageBox(str);
 
 	if (pos != NULL) {
 		Room* r = (Room*)m_RoomList.GetAt(pos);
