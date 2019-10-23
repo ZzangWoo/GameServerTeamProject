@@ -503,7 +503,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM
 						sarl->data.count = -1;
 						cp->Send((char*)sarl, sizeof(sendAllRoomList));
 					}
-					else {
+					else { 
 						while (roomListPosition != NULL) {
 							Room* sendRoom = (Room*)m_RoomList.GetNext(roomListPosition);
 							if (sendRoom != NULL) {
