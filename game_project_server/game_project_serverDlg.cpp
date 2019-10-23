@@ -497,16 +497,44 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM
 				m_RoomList.RemoveAt(pos);
 				m_list_room.DeleteString(p->roomID);
 			}
+			/*
 			createRoom *msg = new createRoom;
 			msg->id = 5006;
 			msg->size = sizeof(createRoomStruct);
 			msg->data.roomID = p->roomID;
+			*/
 			pos = m_ptrClientSocketList.GetHeadPosition();
+
+			sendAllRoomList* sarl = new sendAllRoomList;
+			sarl->id = 3002;
+			sarl->size = sizeof(sendAllRoomListStruct);
+
 			while (pos != NULL) {
 				CClientSocket* cp = (CClientSocket*)m_ptrClientSocketList.GetNext(pos);
-				cp->Send((char*)msg, sizeof(createRoom));
+				POSITION roomListPosition = m_RoomList.GetHeadPosition();
+				sarl->data.count = 0;
+
+				if (cp != NULL) {
+					if (roomListPosition == NULL) {
+						sarl->data.count = -1;
+						cp->Send((char*)sarl, sizeof(sendAllRoomList));
+					}
+					else {
+						while (roomListPosition != NULL) {
+							Room* sendRoom = (Room*)m_RoomList.GetNext(roomListPosition);
+							if (sendRoom != NULL) {
+								_tcscpy_s(sarl->data.roomNameList, sendRoom->name);
+								cp->Send((char*)sarl, sizeof(sendAllRoomList));
+								sarl->data.count++;
+							}
+						}
+					}
+				}
+
+				//cp->Send((char*)sarl, sizeof(createRoom));
 			}
-			delete msg;
+			//delete msg;
+			delete sarl;
 		}
 		UpdateData(false);
 	}
