@@ -135,6 +135,7 @@ struct othelloMsg {
 };
 
 
+
 /************************** 짝맞추기에 필요한 struct ***********************/
 // 카드게임 채팅 메세지
 struct cardMsgStruct {
