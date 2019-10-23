@@ -11,6 +11,7 @@
 CClientSocket::CClientSocket()
 {
 	roomKind = 0;
+	rsp_choice = 0;
 }
 
 CClientSocket::~CClientSocket()
@@ -71,6 +72,16 @@ void CClientSocket::OnReceive(int nErrorCode)
 		str.Format(_T("[Room:%d client:%d]:%s"), msg->roomID, int(this), msg->msg);
 		SendMessage(m_hWnd, WM_CLIENT_OTHELLO_MSG, 0, (LPARAM)((LPCTSTR)str));
 		SendMessage(m_hWnd, WM_CLIENT_OTHELLO_MSG_SEND, 0, (LPARAM)msg);
+	}
+	//가위바위보
+	if (header[0] == 401) {
+		choiceStruct *msg = new choiceStruct;
+		ZeroMemory(msg, sizeof(choiceStruct));
+		Receive((char*)msg, header[1]);
+		this->rsp_choice = msg->choice;
+		this->roomID = msg->roomID;
+		SendMessage(m_hWnd, WM_CLIENT_ROCK_CHOICE, 0, (LPARAM)this);
+		delete msg;
 	}
 	if (header[0] == 3000) {
 		roomInfoRecvMessage *msg = new roomInfoRecvMessage;

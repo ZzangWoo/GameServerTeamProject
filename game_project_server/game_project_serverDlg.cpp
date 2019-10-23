@@ -49,6 +49,7 @@ BEGIN_MESSAGE_MAP(Cgame_project_serverDlg, CDialogEx)
 	ON_MESSAGE(WM_CLIENT_CARD_MSG_SEND, &Cgame_project_serverDlg::OnClientCardMsgSend)
 	ON_MESSAGE(WM_CLIENT_GAME_CLOSE, &Cgame_project_serverDlg::OnClientGameClose)
 	ON_MESSAGE(WM_CLIENT_CARD_IS_READY, &Cgame_project_serverDlg::OnClientCardIsReady)
+	ON_MESSAGE(WM_CLIENT_ROCK_CHOICE, &Cgame_project_serverDlg::OnClientRockChoice)
 END_MESSAGE_MAP()
 
 
@@ -554,5 +555,71 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM
 
 // 게임 방 리스트 클라이언트에 보내주는 함수
 void SendRoomList() {
+
+}
+
+
+afx_msg LRESULT Cgame_project_serverDlg::OnClientRockChoice(WPARAM wParam, LPARAM lParam)
+{
+	CClientSocket *cs = (CClientSocket*)lParam;
+
+	POSITION pos = m_RoomList.FindIndex(cs->roomID);
+
+
+	if (pos != NULL) {
+		Room* r = (Room*)m_RoomList.GetAt(pos);
+		pos = r->clientList.Find(cs);
+		if (pos != NULL) {
+			CClientSocket* p = (CClientSocket*)r->clientList.GetAt(pos);
+			p->rsp_choice = cs->rsp_choice;
+			pos = r->clientList.GetHeadPosition();
+			while (pos != NULL) {
+				p = (CClientSocket*)r->clientList.GetNext(pos);
+				if (p->rsp_choice==0) return 0;
+			}
+			pos = r->clientList.GetHeadPosition();
+			p = (CClientSocket*)r->clientList.GetNext(pos);
+			CClientSocket* p2 = (CClientSocket*)r->clientList.GetNext(pos);
+			choiceMessage *msg = new choiceMessage;
+			int *result = new int[2]; 
+			result=CompareResult(p->rsp_choice, p2->rsp_choice);
+			msg->id = 402;
+			msg->size = sizeof(choiceStruct);
+			msg->data.choice = result[0];
+			p2->Send((char*)msg, sizeof(choiceMessage));
+			msg->data.choice = result[1];
+			p->Send((char*)msg, sizeof(choiceMessage));
+			delete msg,p,p2,cs;
+		}
+	}
+	return 0;
+}
+// 가위바위보 결과 계산
+int* Cgame_project_serverDlg::CompareResult(int player1, int player2) {
+
+	int* result = new int[2];
+	CString str;
+
+	if (player1 == player2) {
+		str = "비겼습니다.";
+		result[0] = 0;
+		result[1] = 0;
+	}
+	if ((player1 == 1 && player2 == 2) || (player1 == 2 && player2 == 3) || (player1 == 3 && player2 == 1)) {
+		str = "player1이 이겼음 player2가 졌음";
+		result[0] = 1;
+		result[1] = -1;
+	}
+	else if ((player1 == 1 && player2 == 3) || (player1 == 2 && player2 == 1) || (player1 == 3 && player2 == 2)) {
+		str = "player1이 졌음 player2가 이겼음";
+		result[0] = -1;
+		result[1] = 1;
+	}
+
+	m_list_msg.InsertString(-1, str);
+
+
+	return result;
+
 
 }

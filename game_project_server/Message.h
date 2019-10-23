@@ -184,3 +184,13 @@ struct playerMessage {
 	int size;
 	playerStruct data;
 };
+
+struct choiceStruct {
+	int choice;
+	int roomID;
+};
+struct choiceMessage {
+	int id;
+	int size;
+	choiceStruct data;
+};
