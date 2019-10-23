@@ -179,6 +179,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientMsgSend(WPARAM wParam, LPARAM l
 			_tcscpy_s(msg->data.name, lpData->name);
 			pClient->Send((char*)msg, sizeof(msgMessage));
 		}
+		delete pClient;
 	}
 
 	return 0;
@@ -187,49 +188,32 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientMsgSend(WPARAM wParam, LPARAM l
 
 afx_msg LRESULT Cgame_project_serverDlg::OnClientReady(WPARAM wParam, LPARAM lParam)
 {
-	CClientSocket *pClient = (CClientSocket*)lParam;
-	CClientSocket *tmp;
+
+	CClientSocket *cs = (CClientSocket*)lParam;
+
+	POSITION pos = m_RoomList.FindIndex(cs->roomID);
+	Room* r = (Room*)m_RoomList.GetAt(pos);
+
+	pos = r->clientList.Find(cs);
+
+	CClientSocket* p = (CClientSocket*)r->clientList.GetAt(pos);
+
+	p->m_ready = true;
+
+	pos = r->clientList.GetHeadPosition();
+	while (pos != NULL) {
+		p = (CClientSocket*)r->clientList.GetNext(pos);
+		if (p->m_ready == false) return 0;
+	}
+	readyMessage *msg = new readyMessage;
+	msg->id = 4;
+	msg->size = sizeof(readyRecvMessage);
+	pos = r->clientList.GetHeadPosition();
+	while (pos != NULL) {
+		p = (CClientSocket*)r->clientList.GetNext(pos);
+		p->Send((char*)msg, sizeof(readyMessage));
+	}
 	
-
-	POSITION pos = m_ptrClientSocketList.Find(pClient);
-	tmp=(CClientSocket*)m_ptrClientSocketList.GetAt(pos);
-	if (m_room.clientList.GetCount() < 2) {
-		tmp->m_ready = true;
-		m_room.clientList.AddTail(tmp);
-		CString str;
-		str.Format(_T("Client (%d)"), int(tmp));
-		m_room_client_list.InsertString(-1, str);
-		if (m_room.clientList.GetCount() == 2) {
-			pos = m_room.clientList.GetHeadPosition();
-			int count = 0;
-			while (pos != NULL) {
-				CClientSocket *ptmp = (CClientSocket*)m_room.clientList.GetNext(pos);
-				count++;
-				if (ptmp != NULL) {
-					readyMessage *msg = new readyMessage;
-					msg->id = 4;
-					msg->size = sizeof(readyRecvMessage);
-					if (count == 1)
-						msg->data.ready = 1;
-					else
-						msg->data.ready = 0;
-					ptmp->Send((char*)msg, sizeof(readyMessage) * 2);
-					CString strTmp;
-					strTmp.Format(_T("[%d]:%d"), int(tmp), tmp->m_ready);
-					m_list_msg.InsertString(-1, strTmp);
-					m_list_msg.SetCurSel(m_list_msg.GetCount() - 1);
-				}
-			}
-		}
-	}
-	else{
-		readyMessage *msg = new readyMessage;
-		msg->id = 5;
-		msg->size = sizeof(readyRecvMessage);
-		msg->data.ready = -1;
-		tmp->Send((char *)msg, sizeof(readyMessage) * 2);
-	}
-
 	return 0;
 }
 
@@ -352,14 +336,14 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRecvRoomPosition(WPARAM wParam,
 			if (r->clientList.GetCount() == 2) {
 				POSITION pos = r->clientList.GetHeadPosition();
 				CClientSocket *cs2 = (CClientSocket*)r->clientList.GetNext(pos);
-				playerMessage *msg = new playerMessage;
-				msg->id = 5010;
-				msg->size = sizeof(playerStruct);
-				_tcscpy_s(msg->data.name, cs->nickName);
-				cs2->Send((char*)msg, sizeof(playerMessage));
-				_tcscpy_s(msg->data.name, cs2->nickName);
-				cs->Send((char*)msg, sizeof(playerMessage));
-				delete msg;
+				playerMessage *msg1 = new playerMessage;
+				msg1->id = 5010;
+				msg1->size = sizeof(playerStruct);
+				_tcscpy_s(msg1->data.name, cs->nickName);
+				cs2->Send((char*)msg1, sizeof(playerMessage));
+				_tcscpy_s(msg1->data.name, cs2->nickName);
+				cs->Send((char*)msg1, sizeof(playerMessage));
+				delete msg1;
 			}
 		}
 		else {
