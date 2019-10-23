@@ -54,13 +54,14 @@ void CClientSocket::OnReceive(int nErrorCode)
 
 		delete msg;
 	}
+	//오델로 레디 버튼
 	if (header[0] == 3) {
-		CString strIPAddress;
-		UINT uPortNum;
-		GetPeerName(strIPAddress, uPortNum);
-		this->m_IPAddress = strIPAddress;
-		this->m_uPortNum = uPortNum;
+		readyRecvMessage *msg = new readyRecvMessage;
+		ZeroMemory(msg, sizeof(readyRecvMessage));
+		Receive((char*)msg, header[1]);
+		this->roomID;
 		SendMessage(m_hWnd, WM_CLIENT_READY, 0, (LPARAM)this);
+		delete msg;
 	}
 	if (header[0] == 50) {
 		othelloMsgStruct *msg = new othelloMsgStruct;
@@ -100,7 +101,7 @@ void CClientSocket::OnReceive(int nErrorCode)
 		this->roomID = ars->roomPosition;
 		this->nickName = ars->ClientName;
 		SendMessage(m_hWnd, WM_CLIENT_RECV_ROOM_POSITION, 0, (LPARAM)this);
-		delete ars,this;
+		delete ars;
 	}
 
 	//게임방 나갈때 
