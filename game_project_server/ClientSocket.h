@@ -38,6 +38,7 @@ public:
 	bool m_ready;
 	int roomID;
 	int roomKind;
+	CString nickName;
 };
 
 class Room {
