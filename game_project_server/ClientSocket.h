@@ -35,6 +35,7 @@ public:
 	UINT m_uPortNum;
 	bool m_ready;
 	int roomID;
+	CString nickName;
 };
 
 class Room {

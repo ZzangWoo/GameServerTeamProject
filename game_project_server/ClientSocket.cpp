@@ -76,8 +76,10 @@ void CClientSocket::OnReceive(int nErrorCode)
 		Room *room = new Room;
 		room->name = msg->name;
 		room->kind = msg->kind;
+		this->nickName = msg->ClientName;
 		room->clientList.AddTail(this);
 		SendMessage(m_hWnd, WM_CLIENT_ROOM_CREATE, 0, (LPARAM)room);
+		delete msg;
 		//SendMessage(m_hWnd, WM_CLIENT_ROOM, 0, (LPARAM)room);
 	}
 	/***************** 대기방 처음 켜졌을때 방리스트 보내달라는 요청 *****************/
@@ -95,8 +97,9 @@ void CClientSocket::OnReceive(int nErrorCode)
 		attendRoomStruct* ars = new attendRoomStruct;
 		Receive((char*)ars, header[1]);
 		this->roomID = ars->roomPosition;
+		this->nickName = ars->ClientName;
 		SendMessage(m_hWnd, WM_CLIENT_RECV_ROOM_POSITION, 0, (LPARAM)this);
-		delete ars;
+		delete ars,this;
 	}
 
 	//게임방 나갈때 

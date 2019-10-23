@@ -345,27 +345,28 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRecvRoomPosition(WPARAM wParam,
 			_tcscpy_s(msg->data.name, r->name);
 			msg->data.roomID = cs->roomID;
 			cs->Send((char*)msg, sizeof(createRoom));
+			delete msg;
+			if (r->clientList.GetCount() == 2) {
+				POSITION pos = r->clientList.GetHeadPosition();
+				CClientSocket *cs2 = (CClientSocket*)r->clientList.GetNext(pos);
+				playerMessage *msg = new playerMessage;
+				msg->id = 5010;
+				msg->size = sizeof(playerStruct);
+				_tcscpy_s(msg->data.name, cs->nickName);
+				cs2->Send((char*)msg, sizeof(playerMessage));
+				_tcscpy_s(msg->data.name, cs2->nickName);
+				cs->Send((char*)msg, sizeof(playerMessage));
+				delete msg;
+			}
 		}
 		else {
 			createRoom* msg = new createRoom;
 			msg->id = 5007;
 			msg->size = sizeof(createRoomStruct);
 			cs->Send((char*)msg, sizeof(createRoom));
+			delete msg;
 		}
 	}
-	/*int countIndex = 0;
-
-	while (roomListPosition != NULL) {
-		Room* sendRoom = (Room*)m_RoomList.GetNext(roomListPosition);
-		if (sendRoom != NULL) {
-			if (countIndex == ars->roomPosition) {
-				CString str;
-				str.Format(_T("%s"), sendRoom->name);
-				AfxMessageBox(str);
-			}
-		}
-		countIndex++;
-	}*/
 
 	return 0;
 }
