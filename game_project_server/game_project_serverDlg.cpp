@@ -48,6 +48,7 @@ BEGIN_MESSAGE_MAP(Cgame_project_serverDlg, CDialogEx)
 	ON_MESSAGE(WM_CLIENT_CARD_MSG, &Cgame_project_serverDlg::OnClientCardMsg)
 	ON_MESSAGE(WM_CLIENT_CARD_MSG_SEND, &Cgame_project_serverDlg::OnClientCardMsgSend)
 	ON_MESSAGE(WM_CLIENT_GAME_CLOSE, &Cgame_project_serverDlg::OnClientGameClose)
+	ON_MESSAGE(WM_CLIENT_CARD_IS_READY, &Cgame_project_serverDlg::OnClientCardIsReady)
 END_MESSAGE_MAP()
 
 
@@ -256,6 +257,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 	m_list_room.InsertString(-1, str);
 	m_list_room.SetCurSel(m_list_room.GetCount() - 1);
 
+	
 	/**************** 만들어진 방리스트 클라이언트로 보내기 *************/
 
 	/*********** 보낼 방리스트 만들기 ***********/
@@ -274,6 +276,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 		}
 	}
 	/********************************************************************/
+	
 
 	/*********** 방만든애한테 어떤 방 만들라고 보내주는 곳 **************/
 	createRoom* cr = new createRoom;
@@ -281,7 +284,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRoomCreate(WPARAM wParam, LPARA
 	cr->size = sizeof(createRoomStruct);
 	cr->data.kind = room->kind;
 	cr->data.roomID = m_RoomList.GetSize()-1;
-	_tcscpy_s( cr->data.name , str);
+	_tcscpy_s(cr->data.name, str);
 
 	POSITION createClientPosition = room->clientList.GetHeadPosition();
 	while (createClientPosition != NULL) {
@@ -446,6 +449,33 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientCardMsgSend(WPARAM wParam, LPAR
 
 	return 0;
 }
+
+afx_msg LRESULT Cgame_project_serverDlg::OnClientCardIsReady(WPARAM wParam, LPARAM lParam) {
+	cardReadyStruct* crs = (cardReadyStruct*)lParam;
+
+	POSITION pos = m_RoomList.FindIndex(crs->roomID);
+
+	Room* r = (Room*)m_RoomList.GetAt(pos);
+	if (r != NULL) {
+		r->card_isReady++;
+		if (r->card_isReady == 2) {
+			pos = r->clientList.GetHeadPosition();
+			while (pos != NULL) {
+				CClientSocket* cs = (CClientSocket*)r->clientList.GetNext(pos);
+				if (cs != NULL) {
+					cardStart* start = new cardStart;
+					start->id = 5400;
+					start->size = sizeof(cardStartStruct);
+					start->data.start = TRUE;
+					cs->Send((char*)start, sizeof(cardStart));
+					delete start;
+				}
+			}
+		}		
+	}
+
+	return 0;
+}
 /*******************************************************************************************************************/
 
 //게임방 나갈때
@@ -453,6 +483,10 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM
 {
 	CClientSocket* p = (CClientSocket*)lParam;
 	POSITION pos = m_RoomList.FindIndex(p->roomID);
+	
+	//CString str;
+	//str.Format(_T("%d"), p->roomKind);
+	//AfxMessageBox(str);
 
 	if (pos != NULL) {
 		Room* r = (Room*)m_RoomList.GetAt(pos);
@@ -472,8 +506,41 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM
 				CClientSocket* cp = (CClientSocket*)m_ptrClientSocketList.GetNext(pos);
 				cp->Send((char*)msg, sizeof(createRoom));
 			}
+			delete msg;
 		}
 		UpdateData(false);
 	}
+
+	/******************** 게임방에 들어가있는 클라이언트한테 지워진 게임방 번호 보내주는 코드 *******************/
+	sendRoomID* srID = new sendRoomID;
+	srID->id = 5008;
+	srID->size = sizeof(sendRoomIDStruct);
+	srID->data.roomID = p->roomID;
+	srID->data.roomKind = p->roomKind;
+
+	//CString str;
+	//str.Format(_T("%d"), srID->data.roomKind);
+	//AfxMessageBox(str);
+
+	POSITION roomPosition = m_RoomList.GetHeadPosition();
+
+	while (roomPosition != NULL) {
+		Room* eachRoom = (Room*)m_RoomList.GetNext(roomPosition);
+		if (eachRoom != NULL) {
+			POSITION clientPosition = eachRoom->clientList.GetHeadPosition();
+			while (clientPosition != NULL) {
+				CClientSocket* sendRoomIDSocket = (CClientSocket*)eachRoom->clientList.GetNext(clientPosition);
+				sendRoomIDSocket->Send((char*)srID, sizeof(sendRoomID));
+			}
+		}
+	}
+	delete srID;
+	/************************************************************************************************************/
+
 	return 0;
+}
+
+// 게임 방 리스트 클라이언트에 보내주는 함수
+void SendRoomList() {
+
 }

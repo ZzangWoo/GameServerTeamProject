@@ -22,6 +22,8 @@
 
 #define WM_CLIENT_GAME_CLOSE WM_USER+5005
 
+#define WM_CLIENT_CARD_IS_READY WM_USER+5400
+
 class CClientSocket : public CSocket
 {
 public:
@@ -35,7 +37,7 @@ public:
 	UINT m_uPortNum;
 	bool m_ready;
 	int roomID;
-	CString nickName;
+	int roomKind;
 };
 
 class Room {
@@ -43,6 +45,11 @@ public:
 	int kind;
 	CString name;
 	CObList clientList;
+
+	/********** 짝맞추기에 필요한 변수 ***********/
+	int card_isReady = 0; // 2 : 모두 준비 (가위바위보 출력)
+	/*********************************************/
+
 	Room() {
 
 	}
