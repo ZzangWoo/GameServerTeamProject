@@ -37,6 +37,7 @@ public:
 	UINT m_uPortNum;
 	bool m_ready;
 	int roomID;
+	int roomKind;
 };
 
 class Room {

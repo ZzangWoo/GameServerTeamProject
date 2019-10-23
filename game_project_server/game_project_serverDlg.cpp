@@ -483,9 +483,9 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM
 	CClientSocket* p = (CClientSocket*)lParam;
 	POSITION pos = m_RoomList.FindIndex(p->roomID);
 	
-	CString str;
-	str.Format(_T("%d"), pos);
-	AfxMessageBox(str);
+	//CString str;
+	//str.Format(_T("%d"), p->roomKind);
+	//AfxMessageBox(str);
 
 	if (pos != NULL) {
 		Room* r = (Room*)m_RoomList.GetAt(pos);
@@ -505,9 +505,37 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientGameClose(WPARAM wParam, LPARAM
 				CClientSocket* cp = (CClientSocket*)m_ptrClientSocketList.GetNext(pos);
 				cp->Send((char*)msg, sizeof(createRoom));
 			}
+			delete msg;
 		}
 		UpdateData(false);
 	}
+
+	/******************** 게임방에 들어가있는 클라이언트한테 지워진 게임방 번호 보내주는 코드 *******************/
+	sendRoomID* srID = new sendRoomID;
+	srID->id = 5008;
+	srID->size = sizeof(sendRoomIDStruct);
+	srID->data.roomID = p->roomID;
+	srID->data.roomKind = p->roomKind;
+
+	//CString str;
+	//str.Format(_T("%d"), srID->data.roomKind);
+	//AfxMessageBox(str);
+
+	POSITION roomPosition = m_RoomList.GetHeadPosition();
+
+	while (roomPosition != NULL) {
+		Room* eachRoom = (Room*)m_RoomList.GetNext(roomPosition);
+		if (eachRoom != NULL) {
+			POSITION clientPosition = eachRoom->clientList.GetHeadPosition();
+			while (clientPosition != NULL) {
+				CClientSocket* sendRoomIDSocket = (CClientSocket*)eachRoom->clientList.GetNext(clientPosition);
+				sendRoomIDSocket->Send((char*)srID, sizeof(sendRoomID));
+			}
+		}
+	}
+	delete srID;
+	/************************************************************************************************************/
+
 	return 0;
 }
 

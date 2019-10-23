@@ -10,6 +10,7 @@
 
 CClientSocket::CClientSocket()
 {
+	roomKind = 0;
 }
 
 CClientSocket::~CClientSocket()
@@ -101,10 +102,15 @@ void CClientSocket::OnReceive(int nErrorCode)
 
 	//게임방 나갈때 
 	if (header[0] == 5005) {
+		//AfxMessageBox(_T("왔따왔다"));
 		createRoomStruct *msg = new createRoomStruct;
 		ZeroMemory(msg, sizeof(createRoomStruct));
 		Receive((char*)msg, header[1]);
+		//CString str;
+		//str.Format(_T("%d | %d"), msg->roomID, msg->roomKind);
+		//AfxMessageBox(str);
 		this->roomID = msg->roomID;
+		this->roomKind = msg->roomKind;
 		SendMessage(m_hWnd, WM_CLIENT_GAME_CLOSE, 0, (LPARAM)this);
 		delete msg;
 	}
