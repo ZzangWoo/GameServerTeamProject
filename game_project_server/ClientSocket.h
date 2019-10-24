@@ -27,6 +27,8 @@
 
 #define WM_CLIENT_CARD_IS_READY WM_USER+5400
 
+
+
 class CClientSocket : public CSocket
 {
 public:

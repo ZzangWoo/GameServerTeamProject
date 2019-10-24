@@ -440,13 +440,40 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientCardMsgSend(WPARAM wParam, LPAR
 
 afx_msg LRESULT Cgame_project_serverDlg::OnClientCardIsReady(WPARAM wParam, LPARAM lParam) {
 	cardReadyStruct* crs = (cardReadyStruct*)lParam;
-
+	
 	POSITION pos = m_RoomList.FindIndex(crs->roomID);
 
 	Room* r = (Room*)m_RoomList.GetAt(pos);
 	if (r != NULL) {
 		r->card_isReady++;
+
+		
+
 		if (r->card_isReady == 2) {
+			/************* Ä«µå ¼¯±â *************/
+			randomCards* rc = new randomCards;
+			rc->id = 5200;
+			rc->size = sizeof(randomCardsStruct);
+
+			for (int i = 0; i < MAX_PLAY_CARD_COUNT; i++) {
+				rc->data.m_card_table[i * 2] = i;
+				rc->data.m_card_table[i * 2 + 1] = i;
+			}
+
+			srand((unsigned int)time(NULL));
+			char first, second, temp;
+			for (int i = 0; i < 100; i++) {
+				first = rand() % 36;
+				second = rand() % 36;
+				if (first != second) {
+					temp = rc->data.m_card_table[first];
+					rc->data.m_card_table[first] = rc->data.m_card_table[second];
+					rc->data.m_card_table[second] = temp;
+				}
+			}
+			/*************************************/
+
+
 			pos = r->clientList.GetHeadPosition();
 			while (pos != NULL) {
 				CClientSocket* cs = (CClientSocket*)r->clientList.GetNext(pos);
@@ -456,9 +483,19 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientCardIsReady(WPARAM wParam, LPAR
 					start->size = sizeof(cardStartStruct);
 					start->data.start = TRUE;
 					cs->Send((char*)start, sizeof(cardStart));
+
+
+					if (crs->roomKind == 1006) {
+						/*CString test;
+						test.Format(_T("%d"), rc->data.m_card_table[2]);
+						AfxMessageBox(test);*/
+						cs->Send((char*)rc, sizeof(randomCardsStruct));
+					}
+					
 					delete start;
 				}
 			}
+			delete rc;
 		}		
 	}
 

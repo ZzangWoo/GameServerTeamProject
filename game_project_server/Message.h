@@ -1,4 +1,9 @@
 #pragma once
+
+
+#define MAX_TOTAL_CARD_COUNT 19
+#define MAX_PLAY_CARD_COUNT 18
+
 struct msgRecvMessage {
 	TCHAR name[50];
 	TCHAR str[2000];
@@ -155,6 +160,7 @@ struct cardMsg {
 struct cardReadyStruct {
 	int roomID;
 	bool isReady;
+	int roomKind;
 };
 
 struct cardReady {
@@ -172,6 +178,17 @@ struct cardStart {
 	int id;
 	int size;
 	cardStartStruct data;
+};
+
+// 섞은 카드 저장
+struct randomCardsStruct {
+	char m_card_table[MAX_PLAY_CARD_COUNT * 2];
+};
+
+struct randomCards {
+	int id;
+	int size;
+	randomCardsStruct data;
 };
 /**********************************************************************/
 
