@@ -70,7 +70,6 @@ void CClientSocket::OnReceive(int nErrorCode)
 		ZeroMemory(map, sizeof(mapStruct));
 		Receive((char*)map, header[1]);
 		this->roomID = map->roomID;
-		map->clientID=SendMessage(m_hWnd, WM_CLIENT_FIND_INDEX, 0, (LPARAM)this);
 		SendMessage(m_hWnd, WM_CLIENT_SEND_MAP, 0, (LPARAM)map);
 	}
 	if (header[0] == 50) {
