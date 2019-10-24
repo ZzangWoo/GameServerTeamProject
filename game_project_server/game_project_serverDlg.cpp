@@ -50,6 +50,8 @@ BEGIN_MESSAGE_MAP(Cgame_project_serverDlg, CDialogEx)
 	ON_MESSAGE(WM_CLIENT_GAME_CLOSE, &Cgame_project_serverDlg::OnClientGameClose)
 	ON_MESSAGE(WM_CLIENT_CARD_IS_READY, &Cgame_project_serverDlg::OnClientCardIsReady)
 	ON_MESSAGE(WM_CLIENT_ROCK_CHOICE, &Cgame_project_serverDlg::OnClientRockChoice)
+	ON_MESSAGE(WM_CLIENT_FIND_INDEX, &Cgame_project_serverDlg::OnClientFindIndex)
+	ON_MESSAGE(WM_CLIENT_SEND_MAP, &Cgame_project_serverDlg::OnClientSendMap)
 END_MESSAGE_MAP()
 
 
@@ -391,6 +393,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientOthelloMsgSend(WPARAM wParam, L
 				msg->size = sizeof(othelloMsgStruct);
 				_tcscpy_s(msg->data.msg, str);
 				cs->Send((char*)msg, sizeof(othelloMsg));
+				delete msg;
 			}
 		}
 	}
@@ -622,4 +625,43 @@ int* Cgame_project_serverDlg::CompareResult(int player1, int player2) {
 	return result;
 
 
+}
+
+afx_msg LRESULT Cgame_project_serverDlg::OnClientFindIndex(WPARAM wParam, LPARAM lParam)
+{
+	CClientSocket *p = (CClientSocket*)lParam;
+	POSITION pos = m_RoomList.FindIndex(p->roomID);
+	Room* r = (Room*)m_RoomList.GetAt(pos);
+
+	pos = r->clientList.Find(p);
+	if (r->clientList.GetNext(pos) == r->clientList.GetTail())
+		return 0;
+	else return 1;
+
+}
+
+
+afx_msg LRESULT Cgame_project_serverDlg::OnClientSendMap(WPARAM wParam, LPARAM lParam)
+{
+
+	mapStruct *map = (mapStruct*)lParam;
+
+	POSITION pos = m_RoomList.FindIndex(map->roomID);
+	Room* r = (Room*)m_RoomList.GetAt(pos);
+
+	mapmessage *msg = new mapmessage;
+	msg->id = 12;
+	msg->size = sizeof(mapStruct);
+	for (int i = 0; i < 8; i++) {
+		for (int j = 0; j < 8; j++) {
+			msg->data.map[i][j] = map->map[i][j];
+		}
+	}
+	pos = r->clientList.GetHeadPosition();
+	while (pos != NULL) {
+		CClientSocket* p = (CClientSocket*)r->clientList.GetNext(pos);
+		p->Send((char*)msg, sizeof(mapmessage));
+	}
+	delete map,msg,r;
+	return 0;
 }

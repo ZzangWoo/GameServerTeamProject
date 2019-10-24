@@ -67,6 +67,8 @@ protected:
 	afx_msg LRESULT OnClientGameClose(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnClientRockChoice(WPARAM wParam, LPARAM lParam);
 	int* CompareResult(int player1, int player2);
+	afx_msg LRESULT OnClientFindIndex(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnClientSendMap(WPARAM wParam, LPARAM lParam);
 };
 
 

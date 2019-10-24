@@ -64,11 +64,21 @@ void CClientSocket::OnReceive(int nErrorCode)
 		SendMessage(m_hWnd, WM_CLIENT_READY, 0, (LPARAM)this);
 		delete msg;
 	}
+	//¿Àµ¨·Î ¸Ê ¹Þ±â
+	if (header[0] == 8) {
+		mapStruct *map = new mapStruct;
+		ZeroMemory(map, sizeof(mapStruct));
+		Receive((char*)map, header[1]);
+		this->roomID = map->roomID;
+		map->clientID=SendMessage(m_hWnd, WM_CLIENT_FIND_INDEX, 0, (LPARAM)this);
+		SendMessage(m_hWnd, WM_CLIENT_SEND_MAP, 0, (LPARAM)map);
+	}
 	if (header[0] == 50) {
 		othelloMsgStruct *msg = new othelloMsgStruct;
 		ZeroMemory(msg,sizeof(othelloMsg));
 		Receive((char*)msg, header[1]);
 		CString str;
+
 		str.Format(_T("[Room:%d client:%d]:%s"), msg->roomID, int(this), msg->msg);
 		SendMessage(m_hWnd, WM_CLIENT_OTHELLO_MSG, 0, (LPARAM)((LPCTSTR)str));
 		SendMessage(m_hWnd, WM_CLIENT_OTHELLO_MSG_SEND, 0, (LPARAM)msg);

@@ -194,3 +194,15 @@ struct choiceMessage {
 	int size;
 	choiceStruct data;
 };
+
+//ø¿µ®∑Œ ∏  πﬁ∞Ì ¡÷±‚
+struct mapStruct {
+	int clientID;
+	int roomID;
+	int map[8][8];
+};
+struct mapmessage {
+	int id;
+	int size;
+	mapStruct data;
+};
