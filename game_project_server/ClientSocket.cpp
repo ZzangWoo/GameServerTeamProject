@@ -11,7 +11,7 @@
 CClientSocket::CClientSocket()
 {
 	roomKind = 0;
-	rsp_choice = 0;
+	rsp_choice = -1;
 }
 
 CClientSocket::~CClientSocket()

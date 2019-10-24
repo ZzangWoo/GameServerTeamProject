@@ -578,7 +578,7 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRockChoice(WPARAM wParam, LPARA
 			pos = r->clientList.GetHeadPosition();
 			while (pos != NULL) {
 				p = (CClientSocket*)r->clientList.GetNext(pos);
-				if (p->rsp_choice==0) return 0;
+				if (p->rsp_choice==-1) return 0;
 			}
 			pos = r->clientList.GetHeadPosition();
 			p = (CClientSocket*)r->clientList.GetNext(pos);
@@ -590,8 +590,10 @@ afx_msg LRESULT Cgame_project_serverDlg::OnClientRockChoice(WPARAM wParam, LPARA
 			msg->size = sizeof(choiceStruct);
 			msg->data.choice = result[0];
 			p2->Send((char*)msg, sizeof(choiceMessage));
+			p2->rsp_choice = -1;
 			msg->data.choice = result[1];
 			p->Send((char*)msg, sizeof(choiceMessage));
+			p->rsp_choice = -1;
 			delete msg,p,p2,cs;
 		}
 	}
